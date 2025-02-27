@@ -2,10 +2,15 @@ import LocalAuthentication
 import UIKit
 
 public final class AppLockManager {
+    
     public static let shared = AppLockManager()
+    
     private init() {}
 
-    public func authenticateUser(completion: @escaping (Bool) -> Void) {
+    public func authenticateUser(
+        completion: @escaping (Bool) -> Void,
+        onFailure: @escaping () -> Void) {
+            
         DispatchQueue.main.async {
             self.showBlankScreen()
         }
@@ -16,7 +21,7 @@ public final class AppLockManager {
         guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
             DispatchQueue.main.async {
                 self.safeCompletion(completion, with: false)
-                self.openSettingsAndTerminateApp()
+                self.openSettingsAndHandleFailure(onFailure)
             }
             return
         }
@@ -30,11 +35,11 @@ public final class AppLockManager {
                     if let error = authError as? LAError {
                         switch error.code {
                         case .userCancel, .appCancel, .systemCancel:
-                            self.terminateApp()
+                            onFailure() // Let the app handle termination or other logic
                         case .passcodeNotSet:
-                            self.openSettingsAndTerminateApp()
+                            self.openSettingsAndHandleFailure(onFailure)
                         default:
-                            self.terminateApp()
+                            onFailure() // Handle other failures
                         }
                     }
                     self.safeCompletion(completion, with: false)
@@ -49,12 +54,12 @@ public final class AppLockManager {
         }
     }
 
-    private func openSettingsAndTerminateApp() {
+    private func openSettingsAndHandleFailure(_ onFailure: @escaping () -> Void) {
         DispatchQueue.main.async {
             guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
             if UIApplication.shared.canOpenURL(settingsURL) {
                 UIApplication.shared.open(settingsURL)
-                self.terminateApp()
+                onFailure()
             }
         }
     }
@@ -67,12 +72,6 @@ public final class AppLockManager {
                 window.rootViewController = blankViewController
                 window.makeKeyAndVisible()
             }
-        }
-    }
-
-    private func terminateApp() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            exit(0)
         }
     }
 }
