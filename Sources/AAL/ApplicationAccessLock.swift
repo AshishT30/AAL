@@ -4,136 +4,120 @@ import UIKit
 public final class AppLockManager {
     
     public static let shared = AppLockManager()
-    private var isLocked = true
-
+    private var isAppInBackground = false
+    private var isAuthenticationInProgress = false
+    private var lastFailedAuthTime: Date?
+    private let lockTimeThreshold: TimeInterval = 60 // 1 minute
+    
     private init() {
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(applicationWillEnterForeground),
+            selector: #selector(handleAppDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAppWillEnterForeground),
             name: UIApplication.willEnterForegroundNotification,
             object: nil
         )
     }
-
+    
+    @objc private func handleAppDidEnterBackground() {
+        isAppInBackground = true
+    }
+    
+    @objc private func handleAppWillEnterForeground() {
+        isAppInBackground = false
+        
+        if let lastFailedTime = lastFailedAuthTime, Date().timeIntervalSince(lastFailedTime) < lockTimeThreshold {
+            showBlankScreen() // Ensure lock screen remains
+            return
+        }
+        
+        authenticateUser { success in
+            if !success {
+                self.lastFailedAuthTime = Date()
+                self.showBlankScreen() // Keep user locked out on failure
+            }
+        } onFailure: {
+            self.lastFailedAuthTime = Date()
+            self.showBlankScreen() // Keep lock screen visible on failure
+        }
+    }
+    
     public func authenticateUser(
         completion: @escaping (Bool) -> Void,
         onFailure: @escaping () -> Void
     ) {
-        if isLocked {
-            DispatchQueue.main.async {
-                self.showLockScreen()
-            }
+        guard !isAuthenticationInProgress else { return }
+        isAuthenticationInProgress = true
+        
+        DispatchQueue.main.async {
+            self.showBlankScreen()
         }
-
+        
         let context = LAContext()
         var error: NSError?
-
+        
         guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
             DispatchQueue.main.async {
-                self.handleAuthenticationFailure(error: error as? LAError)
-                onFailure()
+                self.safeCompletion(completion, with: false)
+                self.openSettingsAndHandleFailure(onFailure)
+                self.isAuthenticationInProgress = false
             }
             return
         }
-
+        
         context.localizedFallbackTitle = "Enter Passcode"
         context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock the app") { success, authError in
             DispatchQueue.main.async {
+                self.isAuthenticationInProgress = false
                 if success {
-                    self.isLocked = false
-                    completion(true)
+                    self.safeCompletion(completion, with: true)
                 } else {
-                    self.isLocked = true
-                    self.handleAuthenticationFailure(error: authError as? LAError)
-                    completion(false)
-                    onFailure()
+                    self.lastFailedAuthTime = Date()
+                    self.showBlankScreen() // Ensure lock remains after failure
+                    if let error = authError as? LAError {
+                        switch error.code {
+                        case .userCancel, .appCancel, .systemCancel:
+                            onFailure()
+                        case .passcodeNotSet:
+                            self.openSettingsAndHandleFailure(onFailure)
+                        default:
+                            onFailure()
+                        }
+                    }
+                    self.safeCompletion(completion, with: false)
                 }
             }
         }
     }
-
-    /// **🔹 Handle Different Failure Cases**
-    public func handleAuthenticationFailure(error: LAError?) {
-        guard let error = error else {
-            showRetryOrExitAlert(message: "Authentication failed. Please try again.")
-            return
-        }
-
-        switch error.code {
-        case .biometryNotAvailable:
-            showSettingsAlert(message: "Face ID/Touch ID is not available on this device.")
-        case .biometryNotEnrolled:
-            showSettingsAlert(message: "Face ID/Touch ID is not set up. Please enable it in settings.")
-        case .biometryLockout:
-            showSettingsAlert(message: "Face ID/Touch ID is locked due to multiple failed attempts. Use your device passcode.")
-        case .userCancel:
-            showRetryOrExitAlert(message: "Authentication canceled. Do you want to try again?")
-        case .userFallback:
-            showSettingsAlert(message: "You selected to use a passcode. Please unlock your device.")
-        default:
-            showRetryOrExitAlert(message: "Authentication failed. Please try again.")
+    
+    private func safeCompletion(_ completion: @escaping (Bool) -> Void, with result: Bool) {
+        DispatchQueue.main.async {
+            completion(result)
         }
     }
-
-    private func showRetryOrExitAlert(message: String) {
+    
+    private func openSettingsAndHandleFailure(_ onFailure: @escaping () -> Void) {
         DispatchQueue.main.async {
-            let alert = UIAlertController(
-                title: "Authentication Failed",
-                message: message,
-                preferredStyle: .alert
-            )
-
-            alert.addAction(UIAlertAction(title: "Try Again", style: .default, handler: { _ in
-                self.authenticateUser(completion: { _ in }, onFailure: {})
-            }))
-
-            alert.addAction(UIAlertAction(title: "Exit", style: .destructive, handler: { _ in
-                exit(0)
-            }))
-
-            if let topVC = UIApplication.shared.windows.first?.rootViewController {
-                topVC.present(alert, animated: true)
+            guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+            if UIApplication.shared.canOpenURL(settingsURL) {
+                UIApplication.shared.open(settingsURL)
+                onFailure()
             }
         }
     }
-
-    private func showSettingsAlert(message: String) {
-        DispatchQueue.main.async {
-            let alert = UIAlertController(
-                title: "Authentication Required",
-                message: message,
-                preferredStyle: .alert
-            )
-
-            alert.addAction(UIAlertAction(title: "Open Settings", style: .default, handler: { _ in
-                if let settingsURL = URL(string: UIApplication.openSettingsURLString),
-                   UIApplication.shared.canOpenURL(settingsURL) {
-                    UIApplication.shared.open(settingsURL)
-                }
-            }))
-
-            alert.addAction(UIAlertAction(title: "Exit", style: .destructive, handler: { _ in
-                exit(0)
-            }))
-
-            if let topVC = UIApplication.shared.windows.first?.rootViewController {
-                topVC.present(alert, animated: true)
-            }
-        }
-    }
-
-    @objc private func applicationWillEnterForeground() {
-        if isLocked {
-            authenticateUser(completion: { _ in }, onFailure: {})
-        }
-    }
-
-    private func showLockScreen() {
+    
+    private func showBlankScreen() {
         DispatchQueue.main.async {
             if let window = UIApplication.shared.windows.first {
-                let lockViewController = UIViewController()
-                lockViewController.view.backgroundColor = .black
-                window.rootViewController = lockViewController
+                let blankViewController = UIViewController()
+                blankViewController.view.backgroundColor = .black
+                window.rootViewController = blankViewController
                 window.makeKeyAndVisible()
             }
         }
