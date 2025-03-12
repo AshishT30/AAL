@@ -1,7 +1,6 @@
 import LocalAuthentication
 import UIKit
 
-@available(iOS 13.0, *)
 public final class AppLockManager {
     public static let shared = AppLockManager()
     private var isLocked = true
@@ -17,8 +16,7 @@ public final class AppLockManager {
         )
     }
 
-    public func authenticateUser(
-        completion: @escaping (Bool) -> Void,
+    public func authenticateUser(completion: @escaping (Bool) -> Void,
         onFailure: @escaping () -> Void
     ) {
         guard isLocked else {
@@ -87,7 +85,7 @@ public final class AppLockManager {
             lockVC.view.backgroundColor = .clear
 
             //  Add Blur Effect
-            let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+            let blurEffect = UIBlurEffect(style: .light)
             let blurView = UIVisualEffectView(effect: blurEffect)
             blurView.frame = lockVC.view.bounds
             blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -111,7 +109,7 @@ public final class AppLockManager {
             lockVC.view.backgroundColor = .clear
 
             // Add Blur Effect
-            let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+            let blurEffect = UIBlurEffect(style: .light)
             let blurView = UIVisualEffectView(effect: blurEffect)
             blurView.frame = lockVC.view.bounds
             blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
