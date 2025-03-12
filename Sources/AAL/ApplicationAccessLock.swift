@@ -5,6 +5,7 @@ public final class AppLockManager {
     public static let shared = AppLockManager()
     private var isLocked = true
     public var onAuthenticationSuccess: (() -> Void)?
+    private var lockViewController: UIViewController?
 
     private init() {
         NotificationCenter.default.addObserver(
@@ -25,7 +26,7 @@ public final class AppLockManager {
         }
 
         DispatchQueue.main.async {
-            self.showLockScreen() // Show lock screen first
+            self.showLockScreen() // Show blurred lock screen first
         }
 
         let context = LAContext()
@@ -47,7 +48,7 @@ public final class AppLockManager {
                     self.onAuthenticationSuccess?()
                     completion(true)
                 } else if let error = authError as? LAError, error.code == .userCancel {
-                    // If the user cancels, show the lock screen again for retry
+                    // If the user cancels, show the lock screen again with retry option
                     self.showLockScreenWithRetry()
                 } else {
                     self.isLocked = true
@@ -76,10 +77,20 @@ public final class AppLockManager {
     private func showLockScreen() {
         DispatchQueue.main.async {
             if let window = UIApplication.shared.windows.first {
-                let lockViewController = UIViewController()
-                lockViewController.view.backgroundColor = .black
-                window.rootViewController = lockViewController
+                let lockVC = UIViewController()
+                lockVC.view.backgroundColor = .clear
+
+                // Add Blur Effect
+                let blurEffect = UIBlurEffect(style: .dark)
+                let blurView = UIVisualEffectView(effect: blurEffect)
+                blurView.frame = lockVC.view.bounds
+                blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                lockVC.view.addSubview(blurView)
+
+                window.rootViewController = lockVC
                 window.makeKeyAndVisible()
+                
+                self.lockViewController = lockVC
             }
         }
     }
@@ -87,17 +98,34 @@ public final class AppLockManager {
     private func showLockScreenWithRetry() {
         DispatchQueue.main.async {
             if let window = UIApplication.shared.windows.first {
-                let lockViewController = UIViewController()
-                lockViewController.view.backgroundColor = .black
+                let lockVC = UIViewController()
+                lockVC.view.backgroundColor = .clear
 
+                // Add Blur Effect
+                let blurEffect = UIBlurEffect(style: .dark)
+                let blurView = UIVisualEffectView(effect: blurEffect)
+                blurView.frame = lockVC.view.bounds
+                blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                lockVC.view.addSubview(blurView)
+
+                // Create Retry Button
                 let retryButton = UIButton(type: .system)
                 retryButton.setTitle("Retry Authentication", for: .normal)
-                retryButton.addTarget(self, action: #selector(self.retryAuthentication), for: .touchUpInside)
-                retryButton.frame = CGRect(x: 50, y: 300, width: 300, height: 50)
+                retryButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+                retryButton.backgroundColor = .systemBlue
+                retryButton.setTitleColor(.white, for: .normal)
+                retryButton.layer.cornerRadius = 25
+                retryButton.clipsToBounds = true
+                retryButton.frame = CGRect(x: 50, y: 0, width: 250, height: 50)
 
-                lockViewController.view.addSubview(retryButton)
-                window.rootViewController = lockViewController
+                retryButton.center = lockVC.view.center
+                retryButton.addTarget(self, action: #selector(self.retryAuthentication), for: .touchUpInside)
+
+                lockVC.view.addSubview(retryButton)
+                window.rootViewController = lockVC
                 window.makeKeyAndVisible()
+                
+                self.lockViewController = lockVC
             }
         }
     }
@@ -112,6 +140,7 @@ public final class AppLockManager {
                 let homeVC = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()
                 window.rootViewController = homeVC
                 window.makeKeyAndVisible()
+                self.lockViewController = nil
             }
         }
     }
