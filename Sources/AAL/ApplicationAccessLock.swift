@@ -53,7 +53,7 @@ public final class AppLockManager {
     }
 
     /// **🔹 Handle Different Failure Cases**
-    private func handleAuthenticationFailure(error: LAError?) {
+    public func handleAuthenticationFailure(error: LAError?) {
         guard let error = error else {
             showRetryOrExitAlert(message: "Authentication failed. Please try again.")
             return
