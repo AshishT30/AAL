@@ -4,7 +4,7 @@ import UIKit
 public final class AppLockManager {
     public static let shared = AppLockManager()
     private var isLocked = true
-    var onAuthenticationSuccess: (() -> Void)?
+    public var onAuthenticationSuccess: (() -> Void)?
 
     private init() {
         NotificationCenter.default.addObserver(
