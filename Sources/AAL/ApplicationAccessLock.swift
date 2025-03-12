@@ -4,7 +4,7 @@ import UIKit
 public final class AppLockManager {
     public static let shared = AppLockManager()
     private var isLocked = true
-    public var onAuthenticationSuccess: (() -> Void)?
+    var onAuthenticationSuccess: (() -> Void)?
 
     private init() {
         NotificationCenter.default.addObserver(
@@ -25,7 +25,7 @@ public final class AppLockManager {
         }
 
         DispatchQueue.main.async {
-            self.showLockScreen() // ✅ Show lock screen if app is locked
+            self.showLockScreen() // Show lock screen first
         }
 
         let context = LAContext()
@@ -43,9 +43,12 @@ public final class AppLockManager {
             DispatchQueue.main.async {
                 if success {
                     self.isLocked = false
-                    self.removeLockScreen() // ✅ Remove lock screen after success
-                    self.onAuthenticationSuccess?() // ✅ Notify authentication success
+                    self.removeLockScreen() // Remove lock screen after success
+                    self.onAuthenticationSuccess?()
                     completion(true)
+                } else if let error = authError as? LAError, error.code == .userCancel {
+                    // If the user cancels, show the lock screen again for retry
+                    self.showLockScreenWithRetry()
                 } else {
                     self.isLocked = true
                     onFailure()
@@ -79,6 +82,28 @@ public final class AppLockManager {
                 window.makeKeyAndVisible()
             }
         }
+    }
+
+    private func showLockScreenWithRetry() {
+        DispatchQueue.main.async {
+            if let window = UIApplication.shared.windows.first {
+                let lockViewController = UIViewController()
+                lockViewController.view.backgroundColor = .black
+
+                let retryButton = UIButton(type: .system)
+                retryButton.setTitle("Retry Authentication", for: .normal)
+                retryButton.addTarget(self, action: #selector(self.retryAuthentication), for: .touchUpInside)
+                retryButton.frame = CGRect(x: 50, y: 300, width: 300, height: 50)
+
+                lockViewController.view.addSubview(retryButton)
+                window.rootViewController = lockViewController
+                window.makeKeyAndVisible()
+            }
+        }
+    }
+
+    @objc private func retryAuthentication() {
+        authenticateUser(completion: { _ in }, onFailure: {})
     }
 
     private func removeLockScreen() {
