@@ -5,7 +5,7 @@ public final class AppLockManager {
     public static let shared = AppLockManager()
     private var isLocked = true
     public var onAuthenticationSuccess: (() -> Void)?
-    private var lockViewController: UIViewController?
+    private var lockWindow: UIWindow?
 
     private init() {
         NotificationCenter.default.addObserver(
@@ -26,7 +26,7 @@ public final class AppLockManager {
         }
 
         DispatchQueue.main.async {
-            self.showLockScreen() // Show blurred lock screen first
+            self.showLockScreen() // Show blurred lock screen
         }
 
         let context = LAContext()
@@ -48,7 +48,7 @@ public final class AppLockManager {
                     self.onAuthenticationSuccess?()
                     completion(true)
                 } else if let error = authError as? LAError, error.code == .userCancel {
-                    // If the user cancels, show the lock screen again with retry option
+                    // If the user cancels, show the lock screen with retry
                     self.showLockScreenWithRetry()
                 } else {
                     self.isLocked = true
@@ -76,57 +76,71 @@ public final class AppLockManager {
 
     private func showLockScreen() {
         DispatchQueue.main.async {
-            if let window = UIApplication.shared.windows.first {
-                let lockVC = UIViewController()
-                lockVC.view.backgroundColor = .clear
-
-                // Add Blur Effect
-                let blurEffect = UIBlurEffect(style: .dark)
-                let blurView = UIVisualEffectView(effect: blurEffect)
-                blurView.frame = lockVC.view.bounds
-                blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                lockVC.view.addSubview(blurView)
-
-                window.rootViewController = lockVC
-                window.makeKeyAndVisible()
-                
-                self.lockViewController = lockVC
+            if self.lockWindow == nil {
+                self.lockWindow = UIWindow(frame: UIScreen.main.bounds)
             }
+
+            guard let lockWindow = self.lockWindow else { return }
+
+            let lockVC = UIViewController()
+            lockVC.view.backgroundColor = .clear
+
+            //  Add Blur Effect
+            let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+            let blurView = UIVisualEffectView(effect: blurEffect)
+            blurView.frame = lockVC.view.bounds
+            blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            lockVC.view.addSubview(blurView)
+
+            lockWindow.rootViewController = lockVC
+            lockWindow.windowLevel = .alert + 1
+            lockWindow.makeKeyAndVisible()
         }
     }
 
     private func showLockScreenWithRetry() {
         DispatchQueue.main.async {
-            if let window = UIApplication.shared.windows.first {
-                let lockVC = UIViewController()
-                lockVC.view.backgroundColor = .clear
-
-                // Add Blur Effect
-                let blurEffect = UIBlurEffect(style: .dark)
-                let blurView = UIVisualEffectView(effect: blurEffect)
-                blurView.frame = lockVC.view.bounds
-                blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                lockVC.view.addSubview(blurView)
-
-                // Create Retry Button
-                let retryButton = UIButton(type: .system)
-                retryButton.setTitle("Retry Authentication", for: .normal)
-                retryButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
-                retryButton.backgroundColor = .systemBlue
-                retryButton.setTitleColor(.white, for: .normal)
-                retryButton.layer.cornerRadius = 25
-                retryButton.clipsToBounds = true
-                retryButton.frame = CGRect(x: 50, y: 0, width: 250, height: 50)
-
-                retryButton.center = lockVC.view.center
-                retryButton.addTarget(self, action: #selector(self.retryAuthentication), for: .touchUpInside)
-
-                lockVC.view.addSubview(retryButton)
-                window.rootViewController = lockVC
-                window.makeKeyAndVisible()
-                
-                self.lockViewController = lockVC
+            if self.lockWindow == nil {
+                self.lockWindow = UIWindow(frame: UIScreen.main.bounds)
             }
+
+            guard let lockWindow = self.lockWindow else { return }
+
+            let lockVC = UIViewController()
+            lockVC.view.backgroundColor = .clear
+
+            // Add Blur Effect
+            let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+            let blurView = UIVisualEffectView(effect: blurEffect)
+            blurView.frame = lockVC.view.bounds
+            blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            lockVC.view.addSubview(blurView)
+
+            // Create and Style Retry Button
+            let retryButton = UIButton(type: .system)
+            retryButton.setTitle("Retry Authentication", for: .normal)
+            retryButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+            retryButton.backgroundColor = .systemBlue
+            retryButton.setTitleColor(.white, for: .normal)
+            retryButton.layer.cornerRadius = 25
+            retryButton.clipsToBounds = true
+            retryButton.translatesAutoresizingMaskIntoConstraints = false
+
+            lockVC.view.addSubview(retryButton)
+
+            // Center Retry Button Properly
+            NSLayoutConstraint.activate([
+                retryButton.centerXAnchor.constraint(equalTo: lockVC.view.centerXAnchor),
+                retryButton.centerYAnchor.constraint(equalTo: lockVC.view.centerYAnchor),
+                retryButton.widthAnchor.constraint(equalToConstant: 250),
+                retryButton.heightAnchor.constraint(equalToConstant: 50)
+            ])
+
+            retryButton.addTarget(self, action: #selector(self.retryAuthentication), for: .touchUpInside)
+
+            lockWindow.rootViewController = lockVC
+            lockWindow.windowLevel = .alert + 1
+            lockWindow.makeKeyAndVisible()
         }
     }
 
@@ -136,12 +150,8 @@ public final class AppLockManager {
 
     private func removeLockScreen() {
         DispatchQueue.main.async {
-            if let window = UIApplication.shared.windows.first {
-                let homeVC = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()
-                window.rootViewController = homeVC
-                window.makeKeyAndVisible()
-                self.lockViewController = nil
-            }
+            self.lockWindow?.isHidden = true
+            self.lockWindow = nil
         }
     }
 }
