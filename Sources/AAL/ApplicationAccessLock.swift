@@ -79,6 +79,7 @@ public final class AppLockManager {
                     onFailure()
                 }
             }
+            return
         }
     }
 
