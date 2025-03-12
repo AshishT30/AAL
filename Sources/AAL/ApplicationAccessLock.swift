@@ -62,10 +62,10 @@ public final class AppLockManager {
         let context = LAContext()
         var error: NSError?
         
-        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
+        if !context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            // Allow user to bypass if no passcode, Face ID, or Touch ID is set
             DispatchQueue.main.async {
-                self.safeCompletion(completion, with: false)
-                self.openSettingsAndHandleFailure(onFailure)
+                self.safeCompletion(completion, with: true)
                 self.isAuthenticationInProgress = false
             }
             return
@@ -85,7 +85,7 @@ public final class AppLockManager {
                         case .userCancel, .appCancel, .systemCancel:
                             onFailure()
                         case .passcodeNotSet:
-                            self.openSettingsAndHandleFailure(onFailure)
+                            self.safeCompletion(completion, with: true) // Allow access if no passcode is set
                         default:
                             onFailure()
                         }
