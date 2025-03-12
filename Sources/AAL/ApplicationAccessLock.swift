@@ -1,6 +1,7 @@
 import LocalAuthentication
 import UIKit
 
+@available(iOS 13.0, *)
 public final class AppLockManager {
     public static let shared = AppLockManager()
     private var isLocked = true
