@@ -14,12 +14,20 @@ public final class AppLockManager {
     private var isLocked = true
     public var onAuthenticationSuccess: (() -> Void)?
     private var lockWindow: UIWindow?
+    private let lockThreshold: TimeInterval = 30 // Lock after 30 seconds
 
     /*
     1.NotificationCenter observes willEnterForegroundNotification to detect when the app comes from the background.
     2.When triggered, applicationWillEnterForeground() will attempt authentication.
     */
     private init() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(applicationWillEnterForeground),
@@ -88,12 +96,25 @@ public final class AppLockManager {
        2.Ensures security without disrupting user flow.
      */
     
-    @objc private func applicationWillEnterForeground() {
-        authenticateUser(
-            completion: { _ in },
-            onFailure: { }
-        )
-    }
+    @objc private func applicationDidEnterBackground() {
+            backgroundTimestamp = Date() // Save background entry time
+        }
+
+        @objc private func applicationWillEnterForeground() {
+            guard let backgroundTimestamp = backgroundTimestamp else {
+                return // No timestamp, ignore
+            }
+
+            let elapsedTime = Date().timeIntervalSince(backgroundTimestamp)
+
+            if elapsedTime >= lockThreshold {
+                // If app was inactive for more than 30 seconds, require authentication
+                DispatchQueue.main.async {
+                    self.authenticateUser(completion: { _ in }, onFailure: {})
+                }
+            }
+        }
+
     
     /*
      1.If the device does not have Face ID or Touch ID, users are redirected to Settings.
