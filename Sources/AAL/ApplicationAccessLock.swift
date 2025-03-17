@@ -14,6 +14,7 @@ public final class AppLockManager {
     private var isLocked = true
     public var onAuthenticationSuccess: (() -> Void)?
     private var lockWindow: UIWindow?
+    private var backgroundTimestamp: Date?
     private let lockThreshold: TimeInterval = 30 // Lock after 30 seconds
 
     /*
