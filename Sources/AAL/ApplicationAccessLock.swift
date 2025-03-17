@@ -176,36 +176,16 @@ public final class AppLockManager {
             guard let lockWindow = self.lockWindow else { return }
 
             let lockVC = UIViewController()
-            lockVC.view.backgroundColor = .clear
+            lockVC.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
 
-            // Add Blur Effect
-            let blurEffect = UIBlurEffect(style: .light)
-            let blurView = UIVisualEffectView(effect: blurEffect)
-            blurView.frame = lockVC.view.bounds
-            blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            lockVC.view.addSubview(blurView)
+            // Create and add CustomPopupView
+            let popupView = CustomPopupView(frame: CGRect(x: 0, y: 0, width: 300, height: 200))
+            popupView.center = lockVC.view.center
+            popupView.onRetry = { [weak self] in
+                self?.retryAuthentication()
+            }
 
-            // Create and Style Retry Button
-            let retryButton = UIButton(type: .system)
-            retryButton.setTitle("Retry Authentication", for: .normal)
-            retryButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
-            retryButton.backgroundColor = .systemBlue
-            retryButton.setTitleColor(.white, for: .normal)
-            retryButton.layer.cornerRadius = 25
-            retryButton.clipsToBounds = true
-            retryButton.translatesAutoresizingMaskIntoConstraints = false
-
-            lockVC.view.addSubview(retryButton)
-
-            // Center Retry Button Properly
-            NSLayoutConstraint.activate([
-                retryButton.centerXAnchor.constraint(equalTo: lockVC.view.centerXAnchor),
-                retryButton.centerYAnchor.constraint(equalTo: lockVC.view.centerYAnchor),
-                retryButton.widthAnchor.constraint(equalToConstant: 250),
-                retryButton.heightAnchor.constraint(equalToConstant: 50)
-            ])
-
-            retryButton.addTarget(self, action: #selector(self.retryAuthentication), for: .touchUpInside)
+            lockVC.view.addSubview(popupView)
 
             lockWindow.rootViewController = lockVC
             lockWindow.windowLevel = .alert + 1
