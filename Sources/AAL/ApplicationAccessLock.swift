@@ -13,7 +13,7 @@ public final class AppLockManager {
     public static let shared = AppLockManager()
     private var isLocked = true
     public var onAuthenticationSuccess: (() -> Void)?
-    private var lockWindow: UIWindow?
+    public var lockWindow: UIWindow?
     private var lastBackgroundTime: Date?
     private let lockTimeInterval: TimeInterval = 30 // Lock after 30 seconds
 
