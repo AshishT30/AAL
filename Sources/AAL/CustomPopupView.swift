@@ -15,7 +15,6 @@ class CustomPopupView: UIView {
     let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "lock") // Lock icon
-        imageView.tintColor = .black
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -24,6 +23,7 @@ class CustomPopupView: UIView {
         let label = UILabel()
         label.text = "Invest BharatPe is locked"
         label.font = UIFont.boldSystemFont(ofSize: 18)
+        label.textColor = .black
         label.textAlignment = .center
         return label
     }()
@@ -32,6 +32,7 @@ class CustomPopupView: UIView {
         let label = UILabel()
         label.text = "For security reasons, please unlock your app to proceed."
         label.font = UIFont.systemFont(ofSize: 14)
+        label.textColor = UIColor.init(red: 61/255.0, green: 73/255.0, blue: 102/255.0, alpha: 1)
         label.textAlignment = .center
         label.numberOfLines = 2
         return label
@@ -40,7 +41,7 @@ class CustomPopupView: UIView {
     let unlockButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Unlock", for: .normal)
-        button.backgroundColor = UIColor.init(red: 16, green: 88, blue: 102, alpha: 1)
+        button.backgroundColor = UIColor.init(red: 16/255.0, green: 88/255.0, blue: 102/255.0, alpha: 1)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 20
         button.heightAnchor.constraint(equalToConstant: 40).isActive = true
