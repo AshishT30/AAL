@@ -98,23 +98,23 @@ public final class AppLockManager {
      */
     
     @objc private func applicationDidEnterBackground() {
-            backgroundTimestamp = Date() // Save background entry time
+        backgroundTimestamp = Date() // Save background entry time
+    }
+    
+    @objc public func applicationWillEnterForeground() {
+        guard let backgroundTimestamp = backgroundTimestamp else {
+            return // No timestamp, ignore
         }
-
-        @objc private func applicationWillEnterForeground() {
-            guard let backgroundTimestamp = backgroundTimestamp else {
-                return // No timestamp, ignore
-            }
-
-            let elapsedTime = Date().timeIntervalSince(backgroundTimestamp)
-
-            if elapsedTime >= lockThreshold {
-                // If app was inactive for more than 30 seconds, require authentication
-                DispatchQueue.main.async {
-                    self.authenticateUser(completion: { _ in }, onFailure: {})
-                }
+        
+        let elapsedTime = Date().timeIntervalSince(backgroundTimestamp)
+        
+        if elapsedTime >= lockThreshold {
+            // If app was inactive for more than 30 seconds, require authentication
+            DispatchQueue.main.async {
+                self.authenticateUser(completion: { _ in }, onFailure: {})
             }
         }
+    }
 
     
     /*
