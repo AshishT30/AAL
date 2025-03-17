@@ -24,7 +24,7 @@ class CustomPopupView: UIView {
         label.text = "Invest BharatPe is locked"
         label.font = UIFont.boldSystemFont(ofSize: 18)
         label.textColor = .black
-        label.textAlignment = .center
+        label.textAlignment = .left
         return label
     }()
     
@@ -33,7 +33,7 @@ class CustomPopupView: UIView {
         label.text = "For security reasons, please unlock your app to proceed."
         label.font = UIFont.systemFont(ofSize: 14)
         label.textColor = UIColor.init(red: 61/255.0, green: 73/255.0, blue: 102/255.0, alpha: 1)
-        label.textAlignment = .center
+        label.textAlignment = .left
         label.numberOfLines = 2
         return label
     }()
