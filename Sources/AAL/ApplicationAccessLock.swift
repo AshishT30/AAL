@@ -178,14 +178,22 @@ public final class AppLockManager {
             let lockVC = UIViewController()
             lockVC.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
 
-            // Create and add CustomPopupView
-            let popupView = CustomPopupView(frame: CGRect(x: 0, y: 0, width: 300, height: 200))
-            popupView.center = lockVC.view.center
+            // Create CustomPopupView
+            let popupView = CustomPopupView()
+            popupView.translatesAutoresizingMaskIntoConstraints = false
             popupView.onRetry = { [weak self] in
                 self?.retryAuthentication()
             }
 
             lockVC.view.addSubview(popupView)
+
+            // Apply Auto Layout constraints to center it
+            NSLayoutConstraint.activate([
+                popupView.centerXAnchor.constraint(equalTo: lockVC.view.centerXAnchor),
+                popupView.centerYAnchor.constraint(equalTo: lockVC.view.centerYAnchor),
+                popupView.widthAnchor.constraint(equalToConstant: 300),
+                popupView.heightAnchor.constraint(equalToConstant: 200)
+            ])
 
             lockWindow.rootViewController = lockVC
             lockWindow.windowLevel = .alert + 1
