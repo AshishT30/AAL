@@ -14,8 +14,8 @@ public final class AppLockManager {
     private var isLocked = true
     public var onAuthenticationSuccess: (() -> Void)?
     private var lockWindow: UIWindow?
-    private var backgroundTimestamp: Date?
-    private let lockThreshold: TimeInterval = 30 // Lock after 30 seconds
+    private var lastBackgroundTime: Date?
+    private let lockTimeInterval: TimeInterval = 30 // Lock after 30 seconds
 
     /*
     1.NotificationCenter observes willEnterForegroundNotification to detect when the app comes from the background.
@@ -98,19 +98,20 @@ public final class AppLockManager {
      */
     
     @objc private func applicationDidEnterBackground() {
-        backgroundTimestamp = Date() // Save background entry time
+        lastBackgroundTime = Date() // Save background entry time
     }
     
     @objc public func applicationWillEnterForeground() {
-        guard let backgroundTimestamp = backgroundTimestamp else {
+        guard let lastBackgroundTime = lastBackgroundTime else {
             return // No timestamp, ignore
         }
         
-        let elapsedTime = Date().timeIntervalSince(backgroundTimestamp)
+        let elapsedTime = Date().timeIntervalSince(lastBackgroundTime)
         
-        if elapsedTime >= lockThreshold {
+        if elapsedTime >= lockTimeInterval {
             // If app was inactive for more than 30 seconds, require authentication
             DispatchQueue.main.async {
+                self.isLocked = true
                 self.authenticateUser(completion: { _ in }, onFailure: {})
             }
         }
