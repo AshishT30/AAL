@@ -178,6 +178,9 @@ public final class AppLockManager {
             let lockVC = UIViewController()
             lockVC.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
 
+            // Ensure the parent view uses Auto Layout properly
+            lockVC.view.translatesAutoresizingMaskIntoConstraints = false
+
             // Create CustomPopupView
             let popupView = CustomPopupView()
             popupView.translatesAutoresizingMaskIntoConstraints = false
@@ -187,7 +190,10 @@ public final class AppLockManager {
 
             lockVC.view.addSubview(popupView)
 
-            // Apply Auto Layout constraints to center it
+            // Ensure layout updates before applying constraints
+            lockVC.view.layoutIfNeeded()
+
+            // Apply Auto Layout constraints to center the popup correctly
             NSLayoutConstraint.activate([
                 popupView.centerXAnchor.constraint(equalTo: lockVC.view.centerXAnchor),
                 popupView.centerYAnchor.constraint(equalTo: lockVC.view.centerYAnchor),
