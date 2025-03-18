@@ -14,29 +14,21 @@ class CustomPopupView: UIView {
 
     lazy var imageView: UIImageView = {
         let imageView = UIImageView()
-        if let bundlePath = Bundle(for: CustomPopupView.self).resourcePath {
-            print("Bundle Path: \(bundlePath)")
-            let imagePath = "\(bundlePath)/lock.png"
-            print("Checking image path: \(imagePath)")
-            print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
-        }
-        
-        if let bundlePath = Bundle(for: AppLockManager.self).resourcePath {
-            print("Bundle Path: \(bundlePath)")
-            let imagePath = "\(bundlePath)/lock.png"
-            print("Checking image path: \(imagePath)")
-            print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
-        }
-        
         if let bundlePath = Bundle.module.resourcePath {
-            print("✅ Bundle Path: \(bundlePath)")
+            print("Bundle Path: \(bundlePath)")
             let imagePath = "\(bundlePath)/lock.png"
-            print(FileManager.default.fileExists(atPath: imagePath) ? "✅ Image found!" : "❌ Image missing!")
+            print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
         } else {
-            print("❌ Bundle not found!")
+            print("Bundle not found!")
         }
         
-        imageView.image = loadImage(named: "lock")
+        if let imagePath = Bundle.module.path(forResource: "lock", ofType: "png") {
+            imageView.image = UIImage(contentsOfFile: imagePath)
+        } else {
+            print("Image path not found!")
+        }
+        imageView.isHidden = false
+        imageView.alpha = 1.0
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
