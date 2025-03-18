@@ -19,7 +19,7 @@ class CustomPopupView: UIView {
         } else {
             debugPrint("Image NOT found in the bundle!")
         }
-        imageView.image = loadImage(named: "lock") ?? UIImage()// Lock icon
+        imageView.image = UIImage.fromBundle(named: "lock")
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()

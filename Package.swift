@@ -7,7 +7,7 @@ let package = Package(
     name: "AAL",
     platforms: [
         .iOS(.v12)
-       ],
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -20,10 +20,8 @@ let package = Package(
         .target(
             name: "AAL",
             resources: [
-                .process("Resources") // Ensure resources are processed
-            ],
-            swiftSettings: [
-                .enableExperimentalFeature("InternalImportsByDefault")
-        ])
+                .process("Resources") // This tells SPM to include the Resources folder
+            ]
+        )
     ]
 )
