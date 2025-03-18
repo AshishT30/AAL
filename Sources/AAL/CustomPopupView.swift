@@ -72,19 +72,23 @@ class CustomPopupView: UIView {
         let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel, messageLabel, unlockButton])
         stackView.axis = .vertical
         stackView.spacing = 15
-        stackView.alignment = .leading
+        stackView.alignment = .fill // Ensure all items take full width
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
         addSubview(stackView)
 
         imageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
         imageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        unlockButton.widthAnchor.constraint(equalToConstant: 200).isActive = true
+
+        unlockButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
 
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
             stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            stackView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 1.0)
+            stackView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8),
+
+            unlockButton.leadingAnchor.constraint(equalTo: stackView.leadingAnchor), // Button takes full width
+            unlockButton.trailingAnchor.constraint(equalTo: stackView.trailingAnchor) // Button takes full width
         ])
     }
 
