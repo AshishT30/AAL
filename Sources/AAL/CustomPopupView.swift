@@ -14,10 +14,18 @@ class CustomPopupView: UIView {
 
     lazy var imageView: UIImageView = {
         let imageView = UIImageView()
-        if let resourceURL = Bundle(for: CustomPopupView.self).url(forResource: "lock", withExtension: "png") {
-            debugPrint("Image found at:", resourceURL)
-        } else {
-            debugPrint("Image NOT found in the bundle!")
+        if let bundlePath = Bundle(for: CustomPopupView.self).resourcePath {
+            print("Bundle Path: \(bundlePath)")
+            let imagePath = "\(bundlePath)/myImage.png"
+            print("Checking image path: \(imagePath)")
+            print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
+        }
+        
+        if let bundlePath = Bundle(for: AppLockManager.self).resourcePath {
+            print("Bundle Path: \(bundlePath)")
+            let imagePath = "\(bundlePath)/myImage.png"
+            print("Checking image path: \(imagePath)")
+            print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
         }
         imageView.image = loadImage(named: "lock")
         imageView.contentMode = .scaleAspectFit
