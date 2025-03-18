@@ -27,6 +27,15 @@ class CustomPopupView: UIView {
             print("Checking image path: \(imagePath)")
             print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
         }
+        
+        if let bundlePath = Bundle.module.resourcePath {
+            print("✅ Bundle Path: \(bundlePath)")
+            let imagePath = "\(bundlePath)/lock.png"
+            print(FileManager.default.fileExists(atPath: imagePath) ? "✅ Image found!" : "❌ Image missing!")
+        } else {
+            print("❌ Bundle not found!")
+        }
+        
         imageView.image = loadImage(named: "lock")
         imageView.contentMode = .scaleAspectFit
         return imageView
