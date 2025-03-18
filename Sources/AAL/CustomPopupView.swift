@@ -14,7 +14,7 @@ class CustomPopupView: UIView {
 
     let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage.loadImage(named: "lock") ?? UIImage()// Lock icon
+        imageView.image = UIImage(named: "lock")// Lock icon
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()

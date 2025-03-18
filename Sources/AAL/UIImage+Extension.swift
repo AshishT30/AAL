@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 extension UIImage {
-    static func loadImage(named imageName: String) -> UIImage? {
+    static public func loadImage(named imageName: String) -> UIImage? {
         return UIImage(named: imageName) // Fallback for iOS 12 and earlier
     }
 }
