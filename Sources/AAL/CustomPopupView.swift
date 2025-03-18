@@ -12,9 +12,14 @@ class CustomPopupView: UIView {
     
     var onRetry: (() -> Void)? // Callback for retrying authentication
 
-    let imageView: UIImageView = {
+    lazy var imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "lock")// Lock icon
+        if let resourceURL = Bundle(for: CustomPopupView.self).url(forResource: "lock", withExtension: "png") {
+            debugPrint("Image found at:", resourceURL)
+        } else {
+            debugPrint("Image NOT found in the bundle!")
+        }
+        imageView.image = loadImage(named: "lock") ?? UIImage()// Lock icon
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -84,5 +89,12 @@ class CustomPopupView: UIView {
 
     @objc private func handleUnlock() {
         onRetry?() // Trigger retry authentication
+    }
+}
+
+extension CustomPopupView {
+    public func loadImage(named imageName: String) -> UIImage? {
+        let bundle = Bundle(for: CustomPopupView.self)
+        return UIImage(named: imageName, in: bundle, compatibleWith: nil)
     }
 }
