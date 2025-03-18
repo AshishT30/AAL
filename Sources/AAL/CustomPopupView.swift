@@ -69,26 +69,31 @@ class CustomPopupView: UIView {
         layer.cornerRadius = 15
         translatesAutoresizingMaskIntoConstraints = false
 
-        let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel, messageLabel, unlockButton])
+        // Wrap button in another stackView to keep it full width
+        let buttonContainer = UIStackView(arrangedSubviews: [unlockButton])
+        buttonContainer.axis = .vertical
+        buttonContainer.alignment = .fill
+
+        let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel, messageLabel, buttonContainer])
         stackView.axis = .vertical
         stackView.spacing = 15
-        stackView.alignment = .fill // Ensure all items take full width
+        stackView.alignment = .leading // Align image & text to left
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
         addSubview(stackView)
 
+        // Set fixed width for image
         imageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
         imageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
+        // Ensure button takes full width
         unlockButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        unlockButton.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8).isActive = true
 
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
             stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            stackView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8),
-
-            unlockButton.leadingAnchor.constraint(equalTo: stackView.leadingAnchor), // Button takes full width
-            unlockButton.trailingAnchor.constraint(equalTo: stackView.trailingAnchor) // Button takes full width
+            stackView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8)
         ])
     }
 
