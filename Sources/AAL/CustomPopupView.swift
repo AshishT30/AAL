@@ -19,7 +19,7 @@ class CustomPopupView: UIView {
         } else {
             debugPrint("Image NOT found in the bundle!")
         }
-        imageView.image = UIImage.fromBundle(named: "lock")
+        imageView.image = loadImage(named: "lock")
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -93,8 +93,11 @@ class CustomPopupView: UIView {
 }
 
 extension CustomPopupView {
-    public func loadImage(named imageName: String) -> UIImage? {
+    func loadImage(named imageName: String) -> UIImage? {
         let bundle = Bundle(for: CustomPopupView.self)
-        return UIImage(named: imageName, in: bundle, compatibleWith: nil)
+        if let imagePath = bundle.path(forResource: imageName, ofType: "png") {
+            return UIImage(contentsOfFile: imagePath)
+        }
+        return nil
     }
 }
