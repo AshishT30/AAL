@@ -19,8 +19,11 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "AAL",
+            resources: [
+                .process("Resources") // Ensure resources are processed
+            ],
             swiftSettings: [
-            .enableExperimentalFeature("InternalImportsByDefault")
+                .enableExperimentalFeature("InternalImportsByDefault")
         ])
     ]
 )
