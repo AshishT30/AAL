@@ -14,18 +14,10 @@ class CustomPopupView: UIView {
 
     lazy var imageView: UIImageView = {
         let imageView = UIImageView()
-        if let bundlePath = Bundle.module.resourcePath {
-            print("Bundle Path: \(bundlePath)")
-            let imagePath = "\(bundlePath)/lock.png"
-            print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
+        if let image = UIImage.loadFromBundle(named: "lock") {
+            imageView.image = image
         } else {
-            print("Bundle not found!")
-        }
-        
-        if let imagePath = Bundle.module.path(forResource: "lock", ofType: "png") {
-            imageView.image = UIImage(contentsOfFile: imagePath)
-        } else {
-            print("Image path not found!")
+            print("Failed to load image")
         }
         imageView.isHidden = false
         imageView.alpha = 1.0
@@ -92,7 +84,7 @@ class CustomPopupView: UIView {
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
             stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            stackView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8)
+            stackView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 1.0)
         ])
     }
 

@@ -9,8 +9,11 @@ import Foundation
 import UIKit
 
 extension UIImage {
-    static func fromBundle(named imageName: String) -> UIImage? {
-        let bundle = Bundle(for: CustomPopupView.self)
-        return UIImage(named: imageName, in: bundle, compatibleWith: nil)
+    static func loadFromBundle(named imageName: String, withExtension ext: String = "png") -> UIImage? {
+        guard let imagePath = Bundle.module.path(forResource: imageName, ofType: ext) else {
+            print("Image '\(imageName).\(ext)' not found in bundle!")
+            return nil
+        }
+        return UIImage(contentsOfFile: imagePath)
     }
 }
