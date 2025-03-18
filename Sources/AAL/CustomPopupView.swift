@@ -16,14 +16,14 @@ class CustomPopupView: UIView {
         let imageView = UIImageView()
         if let bundlePath = Bundle(for: CustomPopupView.self).resourcePath {
             print("Bundle Path: \(bundlePath)")
-            let imagePath = "\(bundlePath)/myImage.png"
+            let imagePath = "\(bundlePath)/lock.png"
             print("Checking image path: \(imagePath)")
             print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
         }
         
         if let bundlePath = Bundle(for: AppLockManager.self).resourcePath {
             print("Bundle Path: \(bundlePath)")
-            let imagePath = "\(bundlePath)/myImage.png"
+            let imagePath = "\(bundlePath)/lock.png"
             print("Checking image path: \(imagePath)")
             print(FileManager.default.fileExists(atPath: imagePath) ? "Image found!" : "Image missing!")
         }
