@@ -11,10 +11,10 @@ public final class AppLockManager {
      */
     
     public static let shared = AppLockManager()
-    public var isLocked = true
+    private var isLocked = true
     public var onAuthenticationSuccess: (() -> Void)?
     private var lockWindow: UIWindow?
-    public var lastBackgroundTime: Date?
+    private var lastBackgroundTime: Date?
     private let lockTimeInterval: TimeInterval = 30 // Lock after 30 seconds
 
     /*
@@ -22,19 +22,19 @@ public final class AppLockManager {
     2.When triggered, applicationWillEnterForeground() will attempt authentication.
     */
     private init() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(applicationDidEnterBackground),
-            name: UIApplication.didEnterBackgroundNotification,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(applicationWillEnterForeground),
-            name: UIApplication.willEnterForegroundNotification,
-            object: nil
-        )
+//        NotificationCenter.default.addObserver(
+//            self,
+//            selector: #selector(applicationDidEnterBackground),
+//            name: UIApplication.didEnterBackgroundNotification,
+//            object: nil
+//        )
+//        
+//        NotificationCenter.default.addObserver(
+//            self,
+//            selector: #selector(applicationWillEnterForeground),
+//            name: UIApplication.willEnterForegroundNotification,
+//            object: nil
+//        )
     }
 
     /*
@@ -93,6 +93,8 @@ public final class AppLockManager {
     }
 
     /*
+        // Background to Foreground Locking (DISABLED)
+    /*
        1.Calls authenticateUser() every time the app comes from the background.
        2.Ensures security without disrupting user flow.
      */
@@ -116,7 +118,7 @@ public final class AppLockManager {
             }
         }
     }
-
+    */
     
     /*
      1.If the device does not have Face ID or Touch ID, users are redirected to Settings.
