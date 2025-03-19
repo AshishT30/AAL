@@ -197,7 +197,8 @@ public final class AppLockManager {
                     title: "App is Locked",
                     message: "Please unlock to continue.",
                     buttonTitle: "Unlock",
-                    image: "lock"
+                    image: "lock",
+                    buttonColor: "#105866"
                 )
                 defaultPopup.onButtonTap = { [weak self] in
                     self?.retryAuthentication()
