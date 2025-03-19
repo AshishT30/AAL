@@ -20,7 +20,7 @@ public class CustomPopupView: UIView {
     public let buttonColor = String()
       
       // MARK: - Initializer
-    init(title: String, message: String, buttonTitle: String, image: String, buttonColor: String) {
+    public init(title: String, message: String, buttonTitle: String, image: String, buttonColor: String) {
            super.init(frame: .zero)
         setupUI(title: title, message: message, buttonTitle: buttonTitle, image: image, buttonColor: buttonColor)
        }
