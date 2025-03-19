@@ -35,7 +35,7 @@ public class CustomPopupView: UIView {
             self.clipsToBounds = true
 
             // ImageView
-            if let image = UIImage(named: image) {
+            if let image = UIImage.loadFromBundle(named: image) {
                 imageView.image = image
             } else {
                 print("Failed to load image")
