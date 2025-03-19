@@ -16,6 +16,7 @@ public final class AppLockManager {
     private var lockWindow: UIWindow?
     private var lastBackgroundTime: Date?
     private let lockTimeInterval: TimeInterval = 30 // Lock after 30 seconds
+    public var customPopupView: UIView?
 
     /*
     1.NotificationCenter observes willEnterForegroundNotification to detect when the app comes from the background.
@@ -169,40 +170,49 @@ public final class AppLockManager {
     2.Users can try again without restarting the app.
     */
     
-    private func showLockScreenWithRetry() {
+    public func showLockScreenWithRetry() {
         DispatchQueue.main.async {
             if self.lockWindow == nil {
                 self.lockWindow = UIWindow(frame: UIScreen.main.bounds)
             }
-
+            
             guard let lockWindow = self.lockWindow else { return }
-
+            
             let lockVC = UIViewController()
             lockVC.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-
-            // Ensure the parent view uses Auto Layout properly
-            lockVC.view.translatesAutoresizingMaskIntoConstraints = false
-
-            // Create CustomPopupView
-            let popupView = CustomPopupView()
-            popupView.translatesAutoresizingMaskIntoConstraints = false
-            popupView.onRetry = { [weak self] in
-                self?.retryAuthentication()
+            
+            // Use the custom popup if provided, else use a default one
+            if let customPopup = self.customPopupView {
+                lockVC.view.addSubview(customPopup)
+                
+                customPopup.translatesAutoresizingMaskIntoConstraints = false
+                NSLayoutConstraint.activate([
+                    customPopup.centerXAnchor.constraint(equalTo: lockVC.view.centerXAnchor),
+                    customPopup.centerYAnchor.constraint(equalTo: lockVC.view.centerYAnchor),
+                    customPopup.widthAnchor.constraint(equalToConstant: 300),
+                    customPopup.heightAnchor.constraint(equalToConstant: 250)
+                ])
+            } else {
+                let defaultPopup = CustomPopupView(
+                    title: "App is Locked",
+                    message: "Please unlock to continue.",
+                    buttonTitle: "Unlock",
+                    image: "lock"
+                )
+                defaultPopup.onButtonTap = { [weak self] in
+                    self?.retryAuthentication()
+                }
+                lockVC.view.addSubview(defaultPopup)
+                
+                defaultPopup.translatesAutoresizingMaskIntoConstraints = false
+                NSLayoutConstraint.activate([
+                    defaultPopup.centerXAnchor.constraint(equalTo: lockVC.view.centerXAnchor),
+                    defaultPopup.centerYAnchor.constraint(equalTo: lockVC.view.centerYAnchor),
+                    defaultPopup.widthAnchor.constraint(equalToConstant: 300),
+                    defaultPopup.heightAnchor.constraint(equalToConstant: 250)
+                ])
             }
-
-            lockVC.view.addSubview(popupView)
-
-            // Ensure layout updates before applying constraints
-            lockVC.view.layoutIfNeeded()
-
-            // Apply Auto Layout constraints to center the popup correctly
-            NSLayoutConstraint.activate([
-                popupView.centerXAnchor.constraint(equalTo: lockVC.view.centerXAnchor),
-                popupView.centerYAnchor.constraint(equalTo: lockVC.view.centerYAnchor),
-                popupView.widthAnchor.constraint(equalToConstant: 300),
-                popupView.heightAnchor.constraint(equalToConstant: 200)
-            ])
-
+            
             lockWindow.rootViewController = lockVC
             lockWindow.windowLevel = .alert + 1
             lockWindow.makeKeyAndVisible()

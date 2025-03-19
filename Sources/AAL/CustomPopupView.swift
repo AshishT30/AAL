@@ -10,104 +10,85 @@ import UIKit
 
 class CustomPopupView: UIView {
     
-    var onRetry: (() -> Void)? // Callback for retrying authentication
-
-    lazy var imageView: UIImageView = {
-        let imageView = UIImageView()
-        if let image = UIImage.loadFromBundle(named: "lock") {
-            imageView.image = image
-        } else {
-            print("Failed to load image")
-        }
-        imageView.isHidden = false
-        imageView.alpha = 1.0
-        imageView.contentMode = .scaleAspectFit
-        return imageView
-    }()
+    var onButtonTap: (() -> Void)? // Callback for retrying authentication
     
-    let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Invest BharatPe is locked"
-        label.font = UIFont.boldSystemFont(ofSize: 18)
-        label.textColor = .black
-        label.textAlignment = .left
-        return label
-    }()
-    
-    let messageLabel: UILabel = {
-        let label = UILabel()
-        label.text = "For security reasons, please unlock your app to proceed."
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = UIColor.init(red: 61/255.0, green: 73/255.0, blue: 102/255.0, alpha: 1)
-        label.textAlignment = .left
-        label.numberOfLines = 2
-        return label
-    }()
-    
-    let unlockButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Unlock", for: .normal)
-        button.backgroundColor = UIColor.init(red: 16/255.0, green: 88/255.0, blue: 102/255.0, alpha: 1)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 20
-        button.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        return button
-    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupView()
-        unlockButton.addTarget(self, action: #selector(handleUnlock), for: .touchUpInside)
-    }
+    // UI Elements
+      private let imageView = UIImageView()
+      private let titleLabel = UILabel()
+      private let messageLabel = UILabel()
+      private let actionButton = UIButton(type: .system)
+      
+      // MARK: - Initializer
+        init(title: String, message: String, buttonTitle: String, image: String) {
+           super.init(frame: .zero)
+           setupUI(title: title, message: message, buttonTitle: buttonTitle, image: image)
+       }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setupView() {
-        backgroundColor = .white
-        layer.cornerRadius = 15
-        translatesAutoresizingMaskIntoConstraints = false
-
-        // Wrap button in another stackView to keep it full width
-        let buttonContainer = UIStackView(arrangedSubviews: [unlockButton])
-        buttonContainer.axis = .vertical
-        buttonContainer.alignment = .fill
-
-        let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel, messageLabel, buttonContainer])
-        stackView.axis = .vertical
-        stackView.spacing = 15
-        stackView.alignment = .leading // Align image & text to left
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(stackView)
-
-        // Set fixed width for image
-        imageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        imageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-
-        // Ensure button takes full width
-        unlockButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        unlockButton.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8).isActive = true
-
-        NSLayoutConstraint.activate([
-            stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            stackView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8)
-        ])
-    }
-
-    @objc private func handleUnlock() {
-        onRetry?() // Trigger retry authentication
-    }
-}
-
-extension CustomPopupView {
-    func loadImage(named imageName: String) -> UIImage? {
-        let bundle = Bundle(for: CustomPopupView.self)
-        if let imagePath = bundle.path(forResource: imageName, ofType: "png") {
-            return UIImage(contentsOfFile: imagePath)
+            fatalError("init(coder:) has not been implemented")
         }
-        return nil
+
+    private func setupUI(title: String, message: String, buttonTitle: String, image: String) {
+            self.backgroundColor = .white
+            self.layer.cornerRadius = 15
+            self.clipsToBounds = true
+
+            // ImageView
+            if let image = UIImage.loadFromBundle(named: image) {
+                imageView.image = image
+            } else {
+                print("Failed to load image")
+            }
+            imageView.isHidden = false
+            imageView.alpha = 1.0
+            imageView.contentMode = .scaleAspectFit
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+
+            // Title Label
+            titleLabel.text = title
+            titleLabel.textAlignment = .center
+            titleLabel.font = UIFont.boldSystemFont(ofSize: 18)
+            titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+            // Message Label
+            messageLabel.text = message
+            messageLabel.textAlignment = .center
+            messageLabel.font = UIFont.systemFont(ofSize: 14)
+            messageLabel.numberOfLines = 2
+            messageLabel.translatesAutoresizingMaskIntoConstraints = false
+
+            // Action Button
+            actionButton.setTitle(buttonTitle, for: .normal)
+            actionButton.backgroundColor = .systemBlue
+            actionButton.setTitleColor(.white, for: .normal)
+            actionButton.layer.cornerRadius = 8
+            actionButton.translatesAutoresizingMaskIntoConstraints = false
+            actionButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+
+            // StackView
+            let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel, messageLabel, actionButton])
+            stackView.axis = .vertical
+            stackView.spacing = 15
+            stackView.alignment = .leading
+            stackView.translatesAutoresizingMaskIntoConstraints = false
+
+            addSubview(stackView)
+
+            // Constraints
+            NSLayoutConstraint.activate([
+                stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
+                stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
+                stackView.widthAnchor.constraint(equalToConstant: 280),
+
+                imageView.widthAnchor.constraint(equalToConstant: 60),
+                imageView.heightAnchor.constraint(equalToConstant: 60),
+
+                actionButton.widthAnchor.constraint(equalToConstant: 200),
+                actionButton.heightAnchor.constraint(equalToConstant: 40)
+            ])
+        }
+
+        @objc private func buttonTapped() {
+            onButtonTap?()
+        }
     }
-}
