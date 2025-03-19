@@ -10,7 +10,7 @@ import UIKit
 
 public class CustomPopupView: UIView {
     
-    var onButtonTap: (() -> Void)? // Callback for retrying authentication
+    public var onButtonTap: (() -> Void)? // Callback for retrying authentication
     
     // UI Elements
     public let imageView = UIImageView()
