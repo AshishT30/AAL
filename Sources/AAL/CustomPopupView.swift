@@ -35,13 +35,11 @@ public class CustomPopupView: UIView {
             self.clipsToBounds = true
 
             // ImageView
-            if let image = UIImage.loadFromBundle(named: image) {
+            if let image = UIImage(named: image) {
                 imageView.image = image
             } else {
                 print("Failed to load image")
             }
-            imageView.isHidden = false
-            imageView.alpha = 1.0
             imageView.contentMode = .scaleAspectFit
             imageView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -60,19 +58,20 @@ public class CustomPopupView: UIView {
             messageLabel.numberOfLines = 2
             messageLabel.translatesAutoresizingMaskIntoConstraints = false
 
-            // Action Button
+            // Action Button (Full Width, Capsule Shape)
             actionButton.setTitle(buttonTitle, for: .normal)
             actionButton.backgroundColor = UIColor(hexString: buttonColor)
             actionButton.setTitleColor(.white, for: .normal)
-            actionButton.layer.cornerRadius = 8
+            actionButton.layer.cornerRadius = 20 // Capsule Shape
+            actionButton.clipsToBounds = true
             actionButton.translatesAutoresizingMaskIntoConstraints = false
             actionButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
 
-            // StackView
+            // Layout using StackView
             let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel, messageLabel, actionButton])
             stackView.axis = .vertical
             stackView.spacing = 15
-            stackView.alignment = .leading
+            stackView.alignment = .center // Center align everything
             stackView.translatesAutoresizingMaskIntoConstraints = false
 
             addSubview(stackView)
@@ -81,12 +80,12 @@ public class CustomPopupView: UIView {
             NSLayoutConstraint.activate([
                 stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
                 stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
-                stackView.widthAnchor.constraint(equalToConstant: 280),
+                stackView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8),
 
                 imageView.widthAnchor.constraint(equalToConstant: 60),
                 imageView.heightAnchor.constraint(equalToConstant: 60),
 
-                actionButton.widthAnchor.constraint(equalToConstant: 200),
+                actionButton.widthAnchor.constraint(equalTo: stackView.widthAnchor), // Full Width
                 actionButton.heightAnchor.constraint(equalToConstant: 40)
             ])
         }
