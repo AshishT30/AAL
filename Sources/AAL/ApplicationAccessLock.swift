@@ -220,7 +220,7 @@ public final class AppLockManager {
         }
     }
 
-    @objc private func retryAuthentication() {
+    @objc public func retryAuthentication() {
         authenticateUser(completion: { _ in }, onFailure: {})
     }
 

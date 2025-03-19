@@ -71,7 +71,7 @@ public class CustomPopupView: UIView {
             let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel, messageLabel, actionButton])
             stackView.axis = .vertical
             stackView.spacing = 15
-            stackView.alignment = .center // Center align everything
+            stackView.alignment = .leading
             stackView.translatesAutoresizingMaskIntoConstraints = false
 
             addSubview(stackView)
