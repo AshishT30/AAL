@@ -18,6 +18,7 @@ public final class AppLockManager {
     private let lockTimeInterval: TimeInterval = 30 // Lock after 30 seconds
     public var customPopupView: UIView?
     private var wasAuthenticatingWhenBackgrounded = false
+    private var didInterruptAuthentication = false
 
     /*
     1.NotificationCenter observes willEnterForegroundNotification to detect when the app comes from the background.
@@ -60,6 +61,7 @@ public final class AppLockManager {
             return
         }
         wasAuthenticatingWhenBackgrounded = true // Track authentication start
+        didInterruptAuthentication = false
 
         DispatchQueue.main.async {
             self.showLockScreen() // Show blurred lock screen
@@ -79,6 +81,7 @@ public final class AppLockManager {
                     completion(true)
                 } else if let error = authError as? LAError, error.code == .userCancel {
                     // If the user cancels, show the lock screen with retry
+                    self.didInterruptAuthentication = true
                     self.showLockScreenWithRetry()
                 } else {
                     self.isLocked = true
@@ -96,13 +99,13 @@ public final class AppLockManager {
     
     @objc private func applicationDidEnterBackground() {
             if wasAuthenticatingWhenBackgrounded {
-                isLocked = true // Mark app as locked since user left during authentication
+                didInterruptAuthentication = true
         }
     }
     
     @objc public func applicationWillEnterForeground() {
         DispatchQueue.main.async {
-            if self.isLocked && self.wasAuthenticatingWhenBackgrounded {
+            if self.isLocked && self.didInterruptAuthentication {
                 self.showLockScreenWithRetry() // Show retry only if user backgrounded during authentication
             }
         }
