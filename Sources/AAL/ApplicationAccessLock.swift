@@ -114,20 +114,7 @@ public final class AppLockManager {
     }
     */
     
-    /*
-     1.If the device does not have Face ID or Touch ID, users are redirected to Settings.
-     2.Ensures users are informed that authentication must be enabled manually.
-     */
-
-    private func openSettingsAndHandleFailure(_ onFailure: @escaping () -> Void) {
-        DispatchQueue.main.async {
-            guard let settingsURL = URL(string: UIApplication.openSettingsURLString),
-                  UIApplication.shared.canOpenURL(settingsURL) else { return }
-            UIApplication.shared.open(settingsURL)
-            onFailure()
-        }
-    }
-
+    
     /*
      1.Creates a blur effect on the entire screen.
      2.Uses UIWindow to overlay the screen above all content.
