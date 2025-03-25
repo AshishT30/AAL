@@ -66,13 +66,6 @@ public final class AppLockManager {
         let context = LAContext()
         var error: NSError?
 
-        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
-            DispatchQueue.main.async {
-                self.openSettingsAndHandleFailure(onFailure)
-            }
-            return
-        }
-
         context.localizedFallbackTitle = "Enter Passcode"
         context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock the app") { success, authError in
             DispatchQueue.main.async {
