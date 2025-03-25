@@ -17,19 +17,20 @@ public final class AppLockManager {
     private var lastBackgroundTime: Date?
     private let lockTimeInterval: TimeInterval = 30 // Lock after 30 seconds
     public var customPopupView: UIView?
+    private var wasAuthenticatingWhenBackgrounded = false
 
     /*
     1.NotificationCenter observes willEnterForegroundNotification to detect when the app comes from the background.
     2.When triggered, applicationWillEnterForeground() will attempt authentication.
     */
     private init() {
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(applicationDidEnterBackground),
-//            name: UIApplication.didEnterBackgroundNotification,
-//            object: nil
-//        )
-//        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+       
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(applicationWillEnterForeground),
@@ -58,6 +59,7 @@ public final class AppLockManager {
             completion(true)
             return
         }
+        wasAuthenticatingWhenBackgrounded = true // Track authentication start
 
         DispatchQueue.main.async {
             self.showLockScreen() // Show blurred lock screen
@@ -69,6 +71,7 @@ public final class AppLockManager {
         context.localizedFallbackTitle = "Enter Passcode"
         context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock the app") { success, authError in
             DispatchQueue.main.async {
+                self.wasAuthenticatingWhenBackgrounded = false // Reset flag after authentication
                 if success {
                     self.isLocked = false
                     self.removeLockScreen() // Remove lock screen after success
@@ -86,35 +89,24 @@ public final class AppLockManager {
         }
     }
 
-    
-        // Background to Foreground Locking (DISABLED)
     /*
        1.Calls authenticateUser() every time the app comes from the background.
        2.Ensures security without disrupting user flow.
-     
+     */
+    
     @objc private func applicationDidEnterBackground() {
-        lastBackgroundTime = Date() // Save background entry time
+            if wasAuthenticatingWhenBackgrounded {
+                isLocked = true // Mark app as locked since user left during authentication
+        }
     }
-    */
-     
+    
     @objc public func applicationWillEnterForeground() {
-//        guard let lastBackgroundTime = lastBackgroundTime else {
-//            return // No timestamp, ignore
-//        }
-//        
-//        let elapsedTime = Date().timeIntervalSince(lastBackgroundTime)
-        
-//        if elapsedTime >= lockTimeInterval {
-            // If app was inactive for more than 30 seconds, require authentication
-            DispatchQueue.main.async {
-               if self.isLocked {
-                   self.showLockScreenWithRetry() // Show retry screen only
-               }
-           }
-        //}
+        DispatchQueue.main.async {
+            if self.isLocked && self.wasAuthenticatingWhenBackgrounded {
+                self.showLockScreenWithRetry() // Show retry only if user backgrounded during authentication
+            }
+        }
     }
-    
-    
     
     /*
      1.Creates a blur effect on the entire screen.
