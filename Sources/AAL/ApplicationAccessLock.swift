@@ -30,12 +30,12 @@ public final class AppLockManager {
 //            object: nil
 //        )
 //        
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(applicationWillEnterForeground),
-//            name: UIApplication.willEnterForegroundNotification,
-//            object: nil
-//        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
     }
 
     /*
@@ -86,33 +86,34 @@ public final class AppLockManager {
         }
     }
 
-    /*
+    
         // Background to Foreground Locking (DISABLED)
     /*
        1.Calls authenticateUser() every time the app comes from the background.
        2.Ensures security without disrupting user flow.
-     */
-    
+     
     @objc private func applicationDidEnterBackground() {
         lastBackgroundTime = Date() // Save background entry time
     }
-    
+    */
+     
     @objc public func applicationWillEnterForeground() {
-        guard let lastBackgroundTime = lastBackgroundTime else {
-            return // No timestamp, ignore
-        }
+//        guard let lastBackgroundTime = lastBackgroundTime else {
+//            return // No timestamp, ignore
+//        }
+//        
+//        let elapsedTime = Date().timeIntervalSince(lastBackgroundTime)
         
-        let elapsedTime = Date().timeIntervalSince(lastBackgroundTime)
-        
-        if elapsedTime >= lockTimeInterval {
+//        if elapsedTime >= lockTimeInterval {
             // If app was inactive for more than 30 seconds, require authentication
             DispatchQueue.main.async {
                 self.isLocked = true
+                self.showLockScreenWithRetry()
                 self.authenticateUser(completion: { _ in }, onFailure: {})
             }
-        }
+        //}
     }
-    */
+    
     
     
     /*
