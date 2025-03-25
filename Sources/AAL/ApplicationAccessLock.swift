@@ -107,10 +107,10 @@ public final class AppLockManager {
 //        if elapsedTime >= lockTimeInterval {
             // If app was inactive for more than 30 seconds, require authentication
             DispatchQueue.main.async {
-                self.isLocked = true
-                self.showLockScreenWithRetry()
-                self.authenticateUser(completion: { _ in }, onFailure: {})
-            }
+               if self.isLocked {
+                   self.showLockScreenWithRetry() // Show retry screen only
+               }
+           }
         //}
     }
     
