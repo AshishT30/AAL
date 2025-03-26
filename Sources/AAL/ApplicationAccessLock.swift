@@ -40,6 +40,19 @@ public final class AppLockManager {
         )
     }
 
+    
+    //Check if Biometrics or Passcode is set up
+        public func isBiometricOrPasscodeSetup() -> Bool {
+            let context = LAContext()
+            var error: NSError?
+            
+            if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+                return true //Face ID, Touch ID, or Passcode is enabled
+            } else {
+                return false //None are set up
+            }
+        }
+    
     /*
     1.If the app is already unlocked, authentication is skipped.
     2.Otherwise, a blurred lock screen is shown.
@@ -60,16 +73,26 @@ public final class AppLockManager {
             completion(true)
             return
         }
+        
+        //Check if Biometrics or Passcode is enabled before locking
+        if !isBiometricOrPasscodeSetup() {
+            print("Skipping lock screen, no biometrics or passcode is set.")
+            isLocked = false
+            onAuthenticationSuccess?()
+            completion(true)
+            return
+        }
+        
         wasAuthenticatingWhenBackgrounded = true // Track authentication start
         didInterruptAuthentication = false
-
+        
         DispatchQueue.main.async {
             self.showLockScreen() // Show blurred lock screen
         }
-
+        
         let context = LAContext()
         var error: NSError?
-
+        
         context.localizedFallbackTitle = "Enter Passcode"
         context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock the app") { success, authError in
             DispatchQueue.main.async {
